@@ -5,7 +5,7 @@ module.exports = {
 	Query: {
 		filters: (_, args, { dataSources }) => dataSources.db.models.filter.findAll({ where: args }),
 		actions: (_, args, { dataSources }) => dataSources.db.models.action.findAll({ where: args }),
-		users: (_, args, { dataSources }) => dataSources.db.models.user.findAll({ where: args })
+		me: (_, __, { user }) => user
 	},
 	Filter: {
 		actions(filter) {
@@ -19,13 +19,20 @@ module.exports = {
 	},
 	User: {
 		username(user) {
-			return user.fetchProfile();
+			if (user) return user.fetchProfile('username');
+			return null;
 		},
 		discriminator(user) {
-			return user.fetchProfile();
+			if (user) return user.fetchProfile('discriminator');
+			return null;
 		},
 		avatar(user) {
-			return user.fetchProfile();
+			if (user) return user.fetchProfile('avatar');
+			return null;
+		},
+		guilds(user) {
+			if (user) return user.rest.users['@me'].guilds.get();
+			return null;
 		}
 	},
 	RegExp: new GraphQLScalarType({

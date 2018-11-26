@@ -16,14 +16,13 @@ module.exports = (sequelize, DataTypes) => {
 
 	Object.defineProperty(User.prototype, 'rest', {
 		get() {
-			return this._rest || (this._rest = rest(this.accessToken));
+			return this._rest || (this._rest = rest(this.accessToken, { tokenType: 'Bearer' }));
 		}
 	});
 
-	User.prototype.fetchProfile = async function fetchProfile() {
-		const profile = await this.rest.users['@me'].get();
-		this.set(profile);
-		return this;
+	User.prototype.fetchProfile = async function fetchProfile(prop) {
+		if (!this.profile) this.profile = await this.rest.users['@me'].get();
+		return prop ? this.profile[prop] : this.profile;
 	};
 
 	return User;

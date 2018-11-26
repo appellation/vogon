@@ -9,31 +9,40 @@ const Oauth2 = require('./oauth2/Client');
 const routes = require('./oauth2/routes');
 
 const JWT = require('./JWT');
-const Loader = require('./Loader');
 const resolvers = require('./resolvers');
 
 module.exports = class Client {
+	static _loadDB(options) {
+		const db = new Sequelize(options);
+		for (const [name, importer] of Object.entries(require('./models'))) db.import(name, importer);
+		db.models.filter.belongsToMany(db.models.action, { through: 'filter_actions' });
+		db.models.action.belongsToMany(db.models.filter, { through: 'filter_actions' });
+		return db;
+	}
+
+	static _loadGQL(dir) {
+		let typeDefs = '';
+		const files = klawSync(dir, { nodir: true });
+		for (const { path: gql } of files) typeDefs += fs.readFileSync(gql).toString();
+		return typeDefs;
+	}
+
 	constructor(options) {
 		this.options = Object.freeze(options);
-		this.models = new Loader('./src/models');
-		this.db = new Sequelize(this.options.db);
+		this.db = Client._loadDB(this.options.db);
 		this.oauth = new Oauth2(this.options.oauth);
-		this.jwt = new JWT(this.options.oauth.keys[0]);
+		this.jwt = new JWT(this.options.oauth.keys[0], this.db.model('user'));
 		this.rest = rest(this.options.token);
 		this.app = polka(options.server);
 
-		let typeDefs = '';
-		const files = klawSync('./schema', { nodir: true });
-		for (const { path } of files) typeDefs += fs.readFileSync(path).toString();
-
 		this.server = new ApolloServer({
-			typeDefs,
+			typeDefs: Client._loadGQL('./schema'),
 			resolvers,
 			dataSources: () => ({
 				db: this.db
 			}),
 			context: async ({ req }) => {
-				const token = req.getHeader('authorization');
+				const token = req.headers.authorization;
 				const user = await this.jwt.verify(token);
 				return { user };
 			}
@@ -44,17 +53,7 @@ module.exports = class Client {
 	}
 
 	async start(options) {
-		await this._db();
+		await this.db.sync();
 		return new Promise(r => this.app.listen(options, r));
-	}
-
-	async _db() {
-		await this.models.awaitReady();
-		for (const [name, loader] of this.models) this.db.import(name, loader);
-
-		this.db.models.filter.belongsToMany(this.db.models.action, { through: 'filter_actions' });
-		this.db.models.action.belongsToMany(this.db.models.filter, { through: 'filter_actions' });
-
-		return this.db.sync();
 	}
 };
