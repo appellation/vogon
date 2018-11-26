@@ -1,0 +1,4 @@
+type Mutation {
+	createFilter(filter: FilterInput!): Boolean
+	createAction(action: ActionInput!): Boolean
+}

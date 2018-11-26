@@ -1,0 +1,17 @@
+version: '3'
+services:
+  bot:
+    build: ./bot
+    env_file: .env
+  data:
+    build: ./data
+    env_file: .env
+  gateway:
+    build: ./gateway
+    env_file: .env
+  rabbit:
+    image: rabbitmq:3
+  redis:
+    image: redis
+  postgres:
+    image: postgres

@@ -1,0 +1,9 @@
+type Guild {
+	id: ID!
+	name: String!
+	icon: String
+	splash: String
+	owner_id: ID!
+	permissions: Int
+	region: String
+}

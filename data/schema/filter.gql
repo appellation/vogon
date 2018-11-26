@@ -1,0 +1,20 @@
+type Filter {
+	id: ID!
+	guildID: ID!
+	regex: RegExp!
+	minLength: Int
+	count: Float!
+	period: Float!
+	actions: [Action!]!
+}
+
+input FilterInput {
+	guildID: ID!
+	regex: RegExp!
+	minLength: Int
+	count: Float!
+	period: Float!
+	actions: [ActionInput!]
+}
+
+scalar RegExp

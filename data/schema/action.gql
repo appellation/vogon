@@ -1,0 +1,26 @@
+type Action {
+	id: ID!
+	guildID: ID!
+	channelID: ID
+	message: String
+	mod: ModAction
+	deleteDays: Int
+	reason: String
+	filters: [Filter!]!
+}
+
+input ActionInput {
+	guildID: ID!
+	channelID: ID
+	message: String
+	mod: ModAction
+	deleteDays: Int
+	reason: String
+	filters: [FilterInput!]
+}
+
+enum ModAction {
+	KICK
+	SOFTBAN
+	BAN
+}

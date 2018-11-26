@@ -1,0 +1,7 @@
+type User {
+	id: ID!
+	username: String
+	discriminator: String
+	avatar: String
+	guilds: [Guild!]
+}

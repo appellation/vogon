@@ -1,0 +1,5 @@
+type Query {
+	filters(guildID: ID!): [Filter!]
+	actions(guildID: ID!): [Action!]
+	users(id: ID!): [User!]
+}
