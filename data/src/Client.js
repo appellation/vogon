@@ -44,6 +44,7 @@ module.exports = class Client {
 			context: async ({ req }) => {
 				const token = req.headers.authorization;
 				const user = await this.jwt.verify(token);
+				if (user.expiresAt <= Date.now()) await this.oauth.refresh(user.refreshToken);
 				return { user };
 			}
 		});
